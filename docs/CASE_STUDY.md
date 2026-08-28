@@ -131,7 +131,7 @@ picking the better-looking number.
 ## 5. Demo
 
 - Local: `uv run streamlit run app/streamlit_app.py`
-- Live: *[add the Streamlit Community Cloud URL here after deploying]*
+- Live: https://app-review-insights-agent.streamlit.app/
 
 ## Resume bullet
 

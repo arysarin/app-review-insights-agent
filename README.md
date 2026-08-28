@@ -1,5 +1,7 @@
 # App Review Insights Agent
 
+**Live demo: https://app-review-insights-agent.streamlit.app/**
+
 A RAG + LangGraph agent that ingests mobile app store reviews, retrieves and
 classifies them, and produces weekly insight reports — plus an interactive
 chat mode for ad hoc questions like *"what are people saying about the new
