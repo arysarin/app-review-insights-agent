@@ -1,0 +1,53 @@
+{
+  "total_classified": 62,
+  "category_counts": {
+    "ux": 24,
+    "praise": 23,
+    "crash": 14,
+    "feature_request": 1
+  },
+  "avg_rating_by_category": {
+    "crash": 1.86,
+    "feature_request": 5.0,
+    "praise": 4.83,
+    "ux": 2.08
+  },
+  "avg_rating_by_version": {
+    "2.26.30.97": {
+      "avg_rating": 2.38,
+      "review_count": 8
+    },
+    "2.26.32.83": {
+      "avg_rating": 2.85,
+      "review_count": 13
+    },
+    "2.26.33.74": {
+      "avg_rating": 3.22,
+      "review_count": 18
+    },
+    "unknown": {
+      "avg_rating": 3.8,
+      "review_count": 15
+    }
+  },
+  "examples_by_category": {
+    "crash": [
+      "App Crashing Again & Again and solve issues",
+      "this app not open",
+      "app not opening and closing automatically my Whatsapp not opening why or should I forget about Whatsapp"
+    ],
+    "ux": [
+      "app open time very poor",
+      "this app is a very nice app . but sometimes recommend inappropriate apps . even after you refresh the app but even if that issue was there. I would still recommend it because I m sure that they will surely fix it . so 4 \ud83e\udd29",
+      "help me what's up on"
+    ],
+    "praise": [
+      "This app run smoothly",
+      "honestly, i dont see anything wrong with the app. It serves its funccion: to cominicate.",
+      "easy to user"
+    ],
+    "feature_request": [
+      "lneed new whattsap"
+    ]
+  }
+}
