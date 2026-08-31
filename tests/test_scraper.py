@@ -12,6 +12,7 @@ def test_reviews_to_dataframe_columns():
     sample = [
         Review(
             review_id="abc123",
+            app_id="com.example.app",
             user_name="Test User",
             content="Great app but crashes on checkout",
             rating=3,
@@ -23,6 +24,7 @@ def test_reviews_to_dataframe_columns():
     df = reviews_to_dataframe(sample)
     assert list(df.columns) == [
         "review_id",
+        "app_id",
         "user_name",
         "content",
         "rating",

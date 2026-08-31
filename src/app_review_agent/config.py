@@ -24,7 +24,7 @@ TARGET_APP_ID = os.getenv("TARGET_APP_ID", "com.example.app")
 
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2")
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", str(DATA_DIR / "chroma"))
-CHROMA_COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "app_reviews")
+CHROMA_COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "app_reviews_v2")
 
 REVIEWS_CSV_PATH = DATA_DIR / "reviews.csv"
 CHECKPOINT_DB_PATH = DATA_DIR / "checkpoints.sqlite"

@@ -32,10 +32,12 @@ def retrieve_node(state: GraphState) -> dict:
     RAG step the rest of the batch flow reasons over.
     """
     vectorstore = get_vectorstore()
+    app_id = state.get("app_id")
+    search_filter = {"app_id": app_id} if app_id else None
     by_id: dict[str, dict] = {}
 
     for category, query in _CATEGORY_QUERIES.items():
-        docs = vectorstore.similarity_search(query, k=RETRIEVE_K_PER_CATEGORY)
+        docs = vectorstore.similarity_search(query, k=RETRIEVE_K_PER_CATEGORY, filter=search_filter)
         for doc in docs:
             review_id = doc.metadata["review_id"]
             if review_id not in by_id:

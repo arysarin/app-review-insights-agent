@@ -51,6 +51,7 @@ def review_row_to_document(row: pd.Series) -> Document:
         page_content=str(row["content"]),
         metadata={
             "review_id": str(row["review_id"]),
+            "app_id": str(row["app_id"]),
             "rating": int(row["rating"]),
             "thumbs_up": int(row["thumbs_up"]),
             "app_version": str(row["app_version"]) if pd.notna(row["app_version"]) else "unknown",
@@ -60,15 +61,16 @@ def review_row_to_document(row: pd.Series) -> Document:
 
 
 def ingest_dataframe(df: pd.DataFrame, vectorstore: Chroma | None = None, batch_size: int = 200) -> int:
-    """Embed and upsert every row of `df` into Chroma, keyed by review_id.
+    """Embed and upsert every row of `df` into Chroma, keyed by app_id:review_id.
 
-    Upserting on review_id means re-running this after a fresh scrape is
-    safe and idempotent — existing reviews get overwritten in place
-    rather than duplicated.
+    Upserting on this composite id means re-running this after a fresh
+    scrape is safe and idempotent — existing reviews get overwritten in
+    place rather than duplicated — and keeps ids unique across apps even
+    if two apps ever produced the same review_id.
     """
     vectorstore = vectorstore or get_vectorstore()
     documents = [review_row_to_document(row) for _, row in df.iterrows()]
-    ids = [doc.metadata["review_id"] for doc in documents]
+    ids = [f"{doc.metadata['app_id']}:{doc.metadata['review_id']}" for doc in documents]
 
     total = 0
     for start in range(0, len(documents), batch_size):
@@ -99,3 +101,11 @@ def ensure_vectorstore_seeded() -> None:
     logger.info("Chroma collection is empty — seeding from %s", REVIEWS_CSV_PATH)
     df = pd.read_csv(REVIEWS_CSV_PATH)
     ingest_dataframe(df, vectorstore)
+
+
+def get_known_app_ids() -> list[str]:
+    """Every app_id present in reviews.csv, for UI pickers etc."""
+    if not REVIEWS_CSV_PATH.exists():
+        return []
+    df = pd.read_csv(REVIEWS_CSV_PATH, usecols=["app_id"])
+    return sorted(df["app_id"].dropna().unique().tolist())

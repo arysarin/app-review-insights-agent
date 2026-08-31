@@ -26,6 +26,10 @@ class ClassifiedReview(RetrievedReview):
 
 class GraphState(TypedDict, total=False):
     mode: Literal["batch", "chat"]
+    app_id: str
+    """Which app's reviews to scope this run to. Read by retrieve_node
+    (batch) and the search_reviews tool (chat, via InjectedState) as a
+    Chroma metadata filter. Unset means "search across every app"."""
 
     # batch branch: retrieve -> classify -> analyze -> report
     retrieved: list[RetrievedReview]

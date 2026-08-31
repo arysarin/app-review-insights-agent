@@ -59,6 +59,25 @@ rating averages are exact, cheap, and auditable when computed directly —
 the LLM's job in `report_node` is turning already-correct numbers into
 prose, not computing them.
 
+### Extension: multi-app support
+
+`PROJECT_BRIEF.md` explicitly deferred multi-app support to a "v2"
+(section 9, scope discipline) to keep v1 shippable. It turned out to be
+small enough to pull forward once the core pipeline worked: every review
+is now tagged with `app_id` end-to-end (CSV column → Chroma metadata →
+Chroma document id `{app_id}:{review_id}`, which also makes ids
+collision-safe across apps), `retrieve_node`'s similarity search takes an
+`app_id` metadata filter, and the chat tool gets its `app_id` via
+LangGraph's `InjectedState` rather than as a model-controlled argument —
+the LLM decides *when* to search, not *which app* it's allowed to search.
+The Streamlit sidebar has an app picker plus a live "scrape a new app"
+form, so adding a second app is a UI action, not a redeploy. The one
+piece of schema migration this forced: the original `data/reviews.csv`
+predates `app_id`, so it was backfilled with `com.whatsapp` once, and the
+Chroma collection name was bumped (`app_reviews` → `app_reviews_v2`) so
+the old, un-tagged embeddings are cleanly abandoned rather than mixed
+with the new schema.
+
 ## 3. What broke, and how it was found
 
 - **The default Groq model didn't exist.** The brief's original LLM

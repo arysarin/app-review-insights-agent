@@ -34,11 +34,14 @@ cp .env.example .env
 
 ```bash
 uv run python -m app_review_agent.ingestion.run_scrape
+uv run python -m app_review_agent.ingestion.run_scrape --app-id com.spotify.music --count 300
 ```
 
-Fetches recent reviews for `TARGET_APP_ID` (a Google Play package name, e.g.
-`com.whatsapp`) and saves/appends them to `data/reviews.csv`, de-duplicated
-by review_id. Safe to re-run any time to pick up new reviews.
+Fetches recent reviews for an app (`TARGET_APP_ID` by default, or any
+Google Play package name via `--app-id`) and saves/appends them to
+`data/reviews.csv`, tagged with `app_id` and de-duplicated by
+`(app_id, review_id)`. Safe to re-run any time, for any number of apps —
+everything downstream (retrieval, reports, chat) is scoped per app_id.
 
 ## Step 2 — Embed into Chroma
 
@@ -56,24 +59,29 @@ empty, so this step is optional but useful to run explicitly after scraping.
 
 ```bash
 uv run python -m app_review_agent.graph.run_batch
+uv run python -m app_review_agent.graph.run_batch --app-id com.spotify.music
 ```
 
-Runs the batch branch of the graph: retrieves the most relevant reviews per
-theme from Chroma, classifies each into `crash` / `ux` / `billing` /
-`praise` / `feature_request` via a Groq call, computes volume and
-rating-delta statistics with pandas (no LLM involved in this step), then
-has the LLM write a markdown report from those stats. Output goes to
-`data/reports/report_<timestamp>.md` (+ a `.stats.json` alongside it).
+Runs the batch branch of the graph, scoped to one app: retrieves the most
+relevant reviews per theme from that app's slice of Chroma, classifies each
+into `crash` / `ux` / `billing` / `praise` / `feature_request` via a Groq
+call, computes volume and rating-delta statistics with pandas (no LLM
+involved in this step), then has the LLM write a markdown report from those
+stats. Output goes to `data/reports/report_<app_id>_<timestamp>.md` (+ a
+`.stats.json` alongside it).
 
 ## Step 4 — Interactive chat (terminal)
 
 ```bash
 uv run python -m app_review_agent.graph.run_chat
+uv run python -m app_review_agent.graph.run_chat --app-id com.spotify.music
 ```
 
 A REPL against the chat branch of the graph: the agent decides when to call
-`search_reviews` (retrieval exposed as a tool) before answering, and a
-`SqliteSaver` checkpointer gives it memory across turns in the same thread.
+`search_reviews` (retrieval exposed as a tool, scoped to `--app-id` via
+LangGraph's `InjectedState` so the model can't search another app's
+reviews) before answering, and a `SqliteSaver` checkpointer gives it memory
+across turns in the same thread.
 
 ## Step 5 — Evaluation
 
@@ -97,10 +105,13 @@ Optional: set `LANGCHAIN_TRACING_V2=true` and a real `LANGCHAIN_API_KEY` in
 uv run streamlit run app/streamlit_app.py
 ```
 
-Two tabs: the latest weekly report (with a button to regenerate it live),
-and a chat box wired to the same graph and memory as Step 4. On a machine
-with no `data/chroma/` yet (e.g. right after cloning), the app auto-seeds
-the vector store from the committed `data/reviews.csv` on first load.
+A sidebar app picker scopes everything below it — the report tab, stats,
+and chat — to whichever scraped app is selected. An **"Add another app"**
+expander lets you scrape and embed a brand-new Google Play package name
+live from the UI, no CLI needed; it shows up in the picker immediately
+after. On a machine with no `data/chroma/` yet (e.g. right after cloning),
+the app auto-seeds the vector store from the committed `data/reviews.csv`
+on first load.
 
 ### Deploying to Streamlit Community Cloud
 
@@ -126,7 +137,10 @@ uv run pytest
 3. ✅ LangGraph batch flow: retrieve → classify → analyze → report
 4. ✅ Interactive chat node with memory (LangGraph checkpointer)
 5. ✅ Hand-labeled eval set + precision/recall, LangSmith tracing support
-6. ✅ Streamlit app, ready to deploy to Streamlit Community Cloud
+6. ✅ Streamlit app, deployed to Streamlit Community Cloud
+7. ✅ Multi-app support: every review tagged with `app_id`, an in-UI app
+   picker, and a live "scrape a new app" flow — reports/retrieval/chat are
+   all scoped per app
 
 ## Project layout
 
@@ -144,6 +158,7 @@ app-review-insights-agent/
 │       ├── tools.py         # search_reviews — retrieval exposed as a tool
 │       ├── chat_nodes.py    # tool-calling chat agent node
 │       ├── graph.py         # the graph: batch + chat branches, one state schema
+│       ├── reports.py       # per-app report filename conventions
 │       ├── run_batch.py     # CLI — Step 3
 │       └── run_chat.py      # CLI — Step 4
 ├── eval/

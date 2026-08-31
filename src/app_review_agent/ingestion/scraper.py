@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Review:
     review_id: str
+    app_id: str
     user_name: str
     content: str
     rating: int
@@ -52,6 +53,7 @@ def fetch_reviews(
     parsed = [
         Review(
             review_id=r["reviewId"],
+            app_id=app_id,
             user_name=r["userName"],
             content=r["content"],
             rating=r["score"],
